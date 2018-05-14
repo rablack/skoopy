@@ -14,4 +14,5 @@ setup(
     url='https://github.com/rablack/skoopy',
     author='Robert Black',
     packages=find_packages(exclude=['tests']),
+    python_requires='>=3'
 )
