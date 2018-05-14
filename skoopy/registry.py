@@ -19,10 +19,10 @@ class SkoobotRegistry:
         """
         if registryPath == None:
             if platform.system() == "Windows":
-                registryPath = os.path.expanduser("~/skoobot.json")
+                registryPath = "~/skoobot.json"
             else:
-                registryPath = os.path.expanduser("~/.skoobot.json")
-        self.registryPath = registryPath
+                registryPath = "~/.skoobot.json"
+        self.registryPath = os.path.expanduser(registryPath)
         self.valid = True
         if os.path.isfile(registryPath):
             self.load()
