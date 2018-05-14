@@ -1,6 +1,6 @@
 #!/usr/env python3
 
-from transport import TransportBluepy
+from skoopy.transport import TransportBluepy
 
 def scan():
     transport = TransportBluepy()

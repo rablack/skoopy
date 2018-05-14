@@ -14,5 +14,10 @@ setup(
     url='https://github.com/rablack/skoopy',
     author='Robert Black',
     packages=find_packages(exclude=['tests']),
-    python_requires='>=3'
+    python_requires='>=3',
+    entry_points={
+        'console_scripts': [
+            'skooscan=skoopy.scanner:scan',
+        ],
+    },
 )
