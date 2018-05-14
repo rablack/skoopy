@@ -16,7 +16,8 @@ setup(
     packages=find_packages(exclude=['tests']),
     python_requires='>=3',
     install_requires=[
-        'bluepy'
+        'bluepy',
+        'uuid'
     ],
     entry_points={
         'console_scripts': [
