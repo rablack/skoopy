@@ -15,6 +15,9 @@ setup(
     author='Robert Black',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3',
+    install_requires=[
+        'bluepy'
+    ],
     entry_points={
         'console_scripts': [
             'skooscan=skoopy.scanner:scan',
