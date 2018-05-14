@@ -157,5 +157,32 @@ class TestSkootbotRegistry(unittest.TestCase):
                 pass
             self.assertEqual(5, len(registry.registry))
 
+    def testSetDefault(self):
+        """
+        Test for method setDefault()
+
+        Method sets the default name. It takes one parameter, which is either
+        the address or the name.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+
+        registry.setDefault(self.skooDupName)
+        self.assertEqual(self.skooDupName, registry.getDefaultName())
+        
+        registry.setDefault(self.skooAddr)
+        self.assertEqual(self.skooName, registry.getDefaultName())
+
+        registry.setDefault(self.skooDupAddr1)
+        self.assertEqual(self.skooDupName, registry.getDefaultName())
+
+    def testGetDefaultName(self):
+        """
+        Test for method getDefaultName()
+
+        Method gets the default name.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        self.assertEqual(self.skooName, registry.getDefaultName())
+
 if __name__ == "__main__":
     unittest.main()
