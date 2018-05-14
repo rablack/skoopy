@@ -19,8 +19,10 @@ pip3 install skoopy
 
 ## See also
 - [Skoobot Firmware]
+- [Skoobot App for Android]
 
 [Skoobot]: https://hackaday.io/project/75832-skoobot
 [bweiler]: https://github.com/bweiler
 [Skoobot Firmware]: https://github.com/bweiler/Skoobot-firmware
 [bluepy]: https://github.com/IanHarvey/bluepy
+[Skoobot App for Android]: https://github.com/bweiler/Android-Skoobot-Control
