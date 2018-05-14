@@ -6,7 +6,7 @@ Skoopy is a Python 3 library and utilities that can be used to control the [Skoo
 
 1. Make sure that the Python 3 version of [bluepy] is installed. See its repository for details.
 
-2. Download the contents of this repository.
+2. Download and unpack the contents of this repository.
 
 3. In the directory above the downloaded repository run:
 ```sh
