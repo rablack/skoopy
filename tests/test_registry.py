@@ -24,12 +24,17 @@ class TestSkootbotRegistry(unittest.TestCase):
     def setUp(self):
         registryFd, self.tempPath = tempfile.mkstemp(suffix=".json", prefix="skoobot_test", text=True)
 
-        self.skooName = "testSkoo"
+        self.skooName = "TestSkoobot"
         self.skooAddr = "00:44:00:bb:55:ff"
+        self.skooDupName = "DuplicateSkoobot"
+        self.skooDupAddr1 = "00:00:00:00:00:01"
+        self.skooDupAddr2 = "00:00:00:00:00:02"
         registryDict = {
             "default" : self.skooName,
             "skoobots" : {
-                self.skooAddr : self.skooName
+                self.skooAddr : self.skooName,
+                self.skooDupAddr1 : self.skooDupName,
+                self.skooDupAddr2 : self.skooDupName
             }
         }
         with open(self.tempPath, "w") as registryFile:
@@ -56,9 +61,101 @@ class TestSkootbotRegistry(unittest.TestCase):
     
         with self.subTest("setUp() registry"):
             registry = SkoobotRegistry(self.tempPath)
-            self.assertEqual(1, len(registry.registry))
+            self.assertEqual(3, len(registry.registry))
             self.assertEqual(True, registry.valid)
             self.assertEqual(self.skooName, registry.getDefaultName())
-    
+
+    def testGetSkoobotsByName(self):
+        """
+        Test the getSkoobotsByName() method
+
+        The method should return a list of (addr, name) tuples
+        for all skoobots matching name
+        """
+        setUpRegistry = SkoobotRegistry(self.tempPath)
+        names = (self.skooName, self.skooDupName, "nobody", None)
+        for name in names:
+            with self.subTest(name=name):
+                skoobots = setUpRegistry.getSkoobotsByName(name)
+                if name == self.skooDupName:
+                    self.assertEqual(2, len(skoobots))
+                    for skoobot in skoobots:
+                        self.assertEqual(self.skooDupName, skoobot[1])
+                    # Make a list of just the addresses
+                    skooDupAddrs = [skoo[0] for skoo in skoobots]
+                    self.assertIn(self.skooDupAddr1, skooDupAddrs)
+                    self.assertIn(self.skooDupAddr2, skooDupAddrs)
+                elif name == self.skooName:
+                    self.assertEqual(1, len(skoobots))
+                    # There is only 1 skoobot, so test it
+                    skoobot = skoobots[0]
+                    self.assertEqual(self.skooName, skoobot[1])
+                    self.assertEqual(self.skooAddr, skoobot[0])
+                else:
+                    self.assertEqual(0, len(skoobots))
+
+    def testGetSkoobotByAddress(self):
+        """
+        Test the getSkoobotsByAddress() method
+
+        The method should return a list of (addr, name) tupes
+        for the skoobot matching addr, if any. Addresses are unique
+        so there cannot be more than one. We verify uniqueness in
+        the adding tests.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        addrs = (self.skooAddr, self.skooDupAddr1, self.skooDupAddr2, "nomatch", None)
+        matchExpected = (self.skooAddr, self.skooDupAddr1, self.skooDupAddr2)
+        for addr in addrs:
+            expectedLen = 1 if addr in matchExpected else 0
+            with self.subTest(addr=addr, expectedLen=expectedLen):
+                skoobots = registry.getSkoobotsByAddress(addr)
+                self.assertEqual(expectedLen, len(skoobots))
+                if expectedLen == 1:
+                    # There is exactly 1 skoobot in the list, so use it.
+                    skoobot = skoobots[0]
+                    if addr == self.skooAddr:
+                        self.assertEqual(addr, skoobot[0])
+                        self.assertEqual(self.skooName, skoobot[1])
+                    else:
+                        self.assertEqual(addr, skoobot[0])
+                        self.assertEqual(self.skooDupName, skoobot[1])
+
+    def testAddSkoobot(self):
+        """
+        Test addition of skoobots using the addSkoobot() method
+
+        The method adds a skoobot to the registry using an address
+        and an optional name.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        namedAddr = "ff:ff:ff:ff:ff:ff"
+        namedName = "newSkoobot"
+        unnamedAddr = "ff:ff:ff:ff:ff:fe"
+
+        with self.subTest("Add named Skoobot"):
+            registry.addSkoobot(namedAddr, namedName)
+            self.assertEqual(4, len(registry.registry))
+            self.assertEqual(1, len(registry.getSkoobotsByAddress(namedAddr)))
+            self.assertEqual(1, len(registry.getSkoobotsByName(namedName)))
+            
+        with self.subTest("Add unnamed Skoobot"):
+            registry.addSkoobot(unnamedAddr)
+            self.assertEqual(5, len(registry.registry))
+            skoobots = registry.getSkoobotsByAddress(unnamedAddr)
+            self.assertEqual(1, len(skoobots))
+            self.assertIn(skoobots[0][1], registry.skoobotNames)
+
+        with self.subTest("Add duplicate Skoobot"):
+            # It is not defined whether this throws an exception
+            # or which value ends up in the registry,
+            # but it is defined that it does not result in a
+            # duplicate address.
+            try:
+                registry.addSkoobot(namedAddr, namedName)
+            except:
+                pass
+            self.assertEqual(5, len(registry.registry))
+
 if __name__ == "__main__":
     unittest.main()
