@@ -2,6 +2,7 @@
 
 from skoopy.transport import TransportBluepy
 from skoopy.registry import SkoobotRegistry
+import os, shutil
 
 def scan():
     transport = TransportBluepy()
@@ -20,6 +21,7 @@ def scan():
         print(msg.format(addr, name, defaultText))
     print("Saving to list of Skoobots to registry {0:s}".format(registry.registryPath))
     registry.save()
+    shutil.chown(registry.registryPath, os.getlogin())
 
 if __name__ == "__main__":
     scan()

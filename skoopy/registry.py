@@ -21,7 +21,10 @@ class SkoobotRegistry:
             if platform.system() == "Windows":
                 registryPath = "~/skoobot.json"
             else:
-                registryPath = "~/.skoobot.json"
+                # We need to use the logname instead of the user name
+                # in case this is run from sudo
+                logname = os.getlogin()
+                registryPath = "~{0:s}/.skoobots.json".format(logname)
         self.registryPath = os.path.expanduser(registryPath)
         self.valid = True
         if os.path.isfile(registryPath):
