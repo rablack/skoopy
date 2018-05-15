@@ -150,14 +150,3 @@ class SkoobotRegistry:
             raise KeyError("Run out of skoobot names")
         return random.sample(namesAvailable, 1)[0]
         
-# Test code
-if __name__ == "__main__":
-    skooReg = SkoobotRegistry("skoobots.json")
-    
-    randNum = int(random.random() * 255)
-    skooId = "db:5b:d6:fb:b0:{0:02x}".format(randNum)
-    skooReg.addSkoobot(skooId)
-    if skooReg.getDefaultName() == None:
-        skooReg.setDefault(skooId)
-    print(str(skooReg.registry))
-    skooReg.save()
