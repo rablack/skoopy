@@ -85,15 +85,30 @@ class SkoobotRegistry:
             skoobotList.append((address, name))
         return skoobotList
 
-    def addSkoobot(self, addr, name=None):
+    def addSkoobot(self, addr, name=None, replace=True):
         """
         Add a Skoobot to the registry.
         If a name is not provided, a unique name will be generated.
+        If an entry exists, a name is provided and replace=False then
+        a TypeError exception will be generated.
         NB: If the name is specified, there is no requirement for the
         name to be unique.  However, it is strongly recommended.
         """
+        # Validate inputs
+        if not isinstance(addr, str):
+            raise TypeError("Invalid addr : must be a string.")
+        if name != None and not isinstance(name, str):
+            raise TypeError("Invalid name : must be a string.")
+        if name != None and replace == False:
+            if self.registry.get(addr, name) != name:
+                raise RuntimeError("Duplicate skoobot with conflicting name")
+
         if name == None:
-            name = self.generateName()
+            # Use the existing name if it exists
+            name = self.registry.get(addr)
+            if name == None:
+                name = self.generateName()
+
         self.registry[addr] = name
 
     def setDefault(self, nameAddr):

@@ -147,15 +147,29 @@ class TestSkootbotRegistry(unittest.TestCase):
             self.assertIn(skoobots[0][1], registry.skoobotNames)
 
         with self.subTest("Add duplicate Skoobot"):
-            # It is not defined whether this throws an exception
-            # or which value ends up in the registry,
-            # but it is defined that it does not result in a
+            # Bug #7: By default this replaces the existing
+            # skoobot. If the replace=False parameter is set,
+            # it raises a RuntimeError unless the parameters
+            # are compatible with the existing entry.
+            #
+            # It is always true that it does not result in a
             # duplicate address.
-            try:
-                registry.addSkoobot(namedAddr, namedName)
-            except:
-                pass
+            registry.addSkoobot(namedAddr, namedName)
             self.assertEqual(5, len(registry.registry))
+
+            registry.addSkoobot(namedAddr, replace=False)
+            self.assertEqual(5, len(registry.registry))
+
+            with self.assertRaises(RuntimeError):
+                registry.addSkoobot(unnamedAddr, namedName, replace=False)
+
+        with self.subTest("Test invalid parameters"):
+            with self.assertRaises(TypeError):
+                registry.addSkoobot((namedAddr, namedName))
+
+            with self.assertRaises(TypeError):
+                registry.addSkoobot(namedAddr, (namedAddr, namedName))
+
 
     def testSetDefault(self):
         """
