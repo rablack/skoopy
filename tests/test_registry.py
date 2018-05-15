@@ -226,6 +226,63 @@ class TestSkootbotRegistry(unittest.TestCase):
             self.assertEqual(True, registry.valid)
             self.assertEqual(self.skooName, registry.getDefaultName())
 
+    def testSave(self):
+        """
+        Tests for the save() method
+
+        Make sure that save() works, except when the registry is
+        marked invalid.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        altSkooAddr = "aa:aa:aa:aa:aa:aa"
+        altSkooName = "Alt"
+        extraSkooAddr = "ee:ee:ee:ee:ee:ee"
+        extraSkooName = "Extra"
+        
+        with self.subTest("Undo alterations"):
+            registry.addSkoobot(altSkooAddr, altSkooName)
+            registry.setDefault(altSkooAddr)
+            self.assertEqual(4, len(registry.registry))
+
+            registry.load()
+
+            self.assertEqual(3, len(registry.registry))
+            self.assertEqual(self.skooName, registry.getDefaultName())
+        
+        with self.subTest("Alter and save"):
+            registry.addSkoobot(altSkooAddr, altSkooName)
+            registry.setDefault(altSkooAddr)
+            self.assertEqual(4, len(registry.registry))
+
+            # Save the state with the AltSkootbot entry
+            registry.save()
+
+            registry.addSkoobot(extraSkooAddr, extraSkooName)
+            registry.setDefault(extraSkooAddr)
+            self.assertEqual(5, len(registry.registry))
+            self.assertEqual(extraSkooName, registry.getDefaultName())
+
+            # Restore to the save() state
+            registry.load()
+
+            self.assertEqual(4, len(registry.registry))
+            self.assertEqual(altSkooName, registry.getDefaultName())
+
+        with self.subTest("Don't save invalid"):
+            registry.addSkoobot(extraSkooAddr, altSkooName)
+            registry.setDefault(extraSkooAddr)
+            self.assertEqual(5, len(registry.registry))
+            registry.valid = False
+
+            # Fail to save the state with the Extra entry
+            registry.save()
+
+            # Restore to the previous save() state
+            registry.load()
+
+            self.assertEqual(4, len(registry.registry))
+            self.assertEqual(altSkooName, registry.getDefaultName())
+
 
 if __name__ == "__main__":
     unittest.main()
