@@ -306,5 +306,27 @@ class TestSkootbotRegistry(unittest.TestCase):
             with self.assertRaises(KeyError):
                 name = registry.generateName()
 
+    def testBug11(self):
+        """
+        Tests the resolution of bug #11
+
+        "Registry setDefault() does strange things if given a
+        list of lists as a parameter"
+        Check that it raises a TypeError when called with
+        something other than String or None.
+        It turns out that the error only triggers with tuples.
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        with self.subTest("Valid arguments"):
+            registry.setDefault(None)
+            self.assertEqual(None, registry.getDefaultName())
+
+            registry.setDefault(self.skooName)
+            self.assertEqual(self.skooName, registry.getDefaultName())
+
+        with self.subTest("Invalid arguments"):
+            with self.assertRaises(TypeError):
+                registry.setDefault(("test",))
+
 if __name__ == "__main__":
     unittest.main()

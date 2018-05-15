@@ -102,6 +102,8 @@ class SkoobotRegistry:
         NB: The registry stores the name. However, here is no requirement
         for the name to be unique.
         """
+        if nameAddr != None and not isinstance(nameAddr, str):
+            raise TypeError("nameAddr is not a String or None")
         if nameAddr in self.registry:
             nameAddr = self.registry[nameAddr]
         self.default = nameAddr
