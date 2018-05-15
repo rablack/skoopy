@@ -29,7 +29,7 @@ class TestSkootbotRegistry(unittest.TestCase):
         self.skooDupName = "DuplicateSkoobot"
         self.skooDupAddr1 = "00:00:00:00:00:01"
         self.skooDupAddr2 = "00:00:00:00:00:02"
-        registryDict = {
+        self.registryDict = {
             "default" : self.skooName,
             "skoobots" : {
                 self.skooAddr : self.skooName,
@@ -38,7 +38,7 @@ class TestSkootbotRegistry(unittest.TestCase):
             }
         }
         with open(self.tempPath, "w") as registryFile:
-            json.dump(registryDict, registryFile, indent=4)
+            json.dump(self.registryDict, registryFile, indent=4)
 
         os.close(registryFd)
 
@@ -183,6 +183,49 @@ class TestSkootbotRegistry(unittest.TestCase):
         """
         registry = SkoobotRegistry(self.tempPath)
         self.assertEqual(self.skooName, registry.getDefaultName())
+
+    def testLoad(self):
+        """
+        Test for loading the registry.
+
+        Most of this is already tested by the constructor tests,
+        however, we need to check that a reload works and that a
+        failed load sets the valid flag to false
+        """
+        registry = SkoobotRegistry(self.tempPath)
+
+        with self.subTest("Empty dict"):
+            emptyDict = {}
+            with open(self.tempPath, "w") as registryFile:
+                json.dump(emptyDict, registryFile)
+            self.assertEqual(3, len(registry.registry))
+            registry.load()
+            self.assertEqual(0, len(registry.registry))
+            self.assertEqual(True, registry.valid)
+            self.assertEqual(None, registry.getDefaultName())
+       
+        with self.subTest("Invalid dict"):
+            with open(self.tempPath, "w") as registryFile:
+                registryFile.write("rubbish")
+            registry.addSkoobot(self.skooAddr)
+            self.assertEqual(True, registry.valid)
+            
+            with self.assertRaises(json.JSONDecodeError):
+                registry.load()
+
+            self.assertEqual(0, len(registry.registry))
+            self.assertEqual(False, registry.valid)
+            self.assertEqual(None, registry.getDefaultName())
+       
+        with self.subTest("Reload good dict"):
+            with open(self.tempPath, "w") as registryFile:
+                json.dump(self.registryDict, registryFile)
+            self.assertEqual(0, len(registry.registry))
+            registry.load()
+            self.assertEqual(3, len(registry.registry))
+            self.assertEqual(True, registry.valid)
+            self.assertEqual(self.skooName, registry.getDefaultName())
+
 
 if __name__ == "__main__":
     unittest.main()
