@@ -1,6 +1,7 @@
 #!/usr/env python3
 
 from skoopy.transport import TransportBluepy
+from skoopy.registry import SkoobotRegistry
 from pathlib import Path
 import time
 
@@ -11,16 +12,15 @@ transport = TransportBluepy()
 cmdUUID = "00001525-1212-efde-1523-785feabcd123"
 dataUUID = "00001524-1212-efde-1523-785feabcd123"
 
-bleAddrList = []
-try:
-    with skoobot_file_path.open("r") as skoobot_file:
-        for line in skoobot_file:
-            bleAddrList.append(line.strip())
-except FileNotFoundError:
-    print("Skoobot address file not found: {0:s}".format(str(skoobot_file_path)))
-    exit(1)
 
-bleAddr = bleAddrList[0]
+registry = SkoobotRegistry()
+print("Loaded {1:d} skoobots from {0:s}".format(registry.registryPath, len(registry.registry)))
+defaultName = registry.getDefaultName()
+if defaultName == None:
+    print("No default Skoobot")
+    exit(1)
+skoobot = registry.getSkoobotsByName(defaultName)[0]
+bleAddr = skoobot[0]
 
 #class SkooController:
 #    def __init__(self):
