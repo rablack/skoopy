@@ -283,6 +283,28 @@ class TestSkootbotRegistry(unittest.TestCase):
             self.assertEqual(4, len(registry.registry))
             self.assertEqual(altSkooName, registry.getDefaultName())
 
+    def testGenerateName(self):
+        """
+        Tests for the generateName() method
+        """
+        registry = SkoobotRegistry(self.tempPath)
+        altSkooAddr = "aa:aa:aa:aa:aa:aa"
+        altSkooName = "Alt"
+        
+        with self.subTest("Generate name from default list"):
+            name = registry.generateName()
+            self.assertIn(name, registry.skoobotNames)
+
+        with self.subTest("Generate Alt name"):
+            registry.skoobotNames = set([altSkooName])
+            name = registry.generateName()
+            self.assertEqual(altSkooName, name)
+
+        with self.subTest("Names all used"):
+            registry.skoobotNames = set([altSkooName])
+            registry.addSkoobot(altSkooAddr)
+            with self.assertRaises(KeyError):
+                name = registry.generateName()
 
 if __name__ == "__main__":
     unittest.main()
