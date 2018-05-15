@@ -9,9 +9,16 @@ def scan():
     registry = SkoobotRegistry()
 
     rawDevices = transport.findRawDevices()
+    skoobots = []
     for device in rawDevices:
-        # print(transport.rawDeviceInfoStr(device))
-        addr = device.addr
+        scanList = device.getScanData()
+        for scanItem in scanList:
+            if scanItem[0] == 9 and scanItem[2] == "Skoobot":
+                skoobots.append(device)
+
+    for skoobot in skoobots:
+        # print(transport.rawDeviceInfoStr(skoobot))
+        addr = skoobot.addr
         registry.addSkoobot(addr)
         name = registry.getSkoobotsByAddress(addr)[0][1]
         if registry.getDefaultName() == None:
