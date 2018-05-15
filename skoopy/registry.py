@@ -121,6 +121,8 @@ class SkoobotRegistry:
             raise TypeError("nameAddr is not a String or None")
         if nameAddr in self.registry:
             nameAddr = self.registry[nameAddr]
+        if nameAddr != None and not nameAddr in self.registry.values():
+            raise ValueError("Default value does not match a Skoobot in the registry")
         self.default = nameAddr
 
     def getDefaultName(self):
@@ -142,7 +144,10 @@ class SkoobotRegistry:
             with open(self.registryPath, "r") as registryFile:
                 registryDict = json.load(registryFile)
             self.registry = registryDict.get("skoobots", {})
-            self.default = registryDict.get("default", None)
+            self.default = None
+            newDefault = registryDict.get("default", None)
+            if newDefault in self.registry.values():
+                self.default = newDefault
             self.valid = True
         except:
             self.registry = {}

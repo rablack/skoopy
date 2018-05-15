@@ -320,6 +320,25 @@ class TestSkootbotRegistry(unittest.TestCase):
             with self.assertRaises(KeyError):
                 name = registry.generateName()
 
+    def testBug8(self):
+        """
+        Tests the resolution of bug #8
+        """
+        badDefaultName = "gremlin"
+        registry = SkoobotRegistry(self.tempPath)
+        with self.subTest("Setting bad default"):
+            oldDefault = registry.getDefaultName()
+            with self.assertRaises(ValueError):
+                registry.setDefault(badDefaultName)
+            self.assertEqual(oldDefault, registry.getDefaultName())
+
+        with self.subTest("Loading bad default"):
+            self.registryDict["default"] = badDefaultName
+            with open(self.tempPath, "w") as registryFile:
+                json.dump(self.registryDict, registryFile, indent=4)
+            registry.load()
+            self.assertEqual(None, registry.getDefaultName())
+
     def testBug11(self):
         """
         Tests the resolution of bug #11
@@ -341,6 +360,7 @@ class TestSkootbotRegistry(unittest.TestCase):
         with self.subTest("Invalid arguments"):
             with self.assertRaises(TypeError):
                 registry.setDefault(("test",))
+
 
 if __name__ == "__main__":
     unittest.main()
