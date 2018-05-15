@@ -11,12 +11,15 @@ class SkoobotRegistry:
     """
     A register of Skoobots, backed by a JSON file
     """
-    def __init__(self, registryPath=None):
+    def __init__(self, registryPath=None, debug=False):
         """
         Construct a Skoobot registry and load it from its file.
         If the file does not yet exist, an empty registry will be created.
         A file will not be created until the save() method is called.
         """
+        self.debug = debug
+        if self.debug:
+            print("SkoobotRegistry: debug on")
         if registryPath == None:
             if platform.system() == "Windows":
                 registryPath = "~/skoobot.json"
@@ -27,9 +30,11 @@ class SkoobotRegistry:
                 registryPath = "~{0:s}/.skoobots.json".format(logname)
         self.registryPath = os.path.expanduser(registryPath)
         self.valid = True
-        if os.path.isfile(registryPath):
+        if os.path.isfile(self.registryPath):
             self.load()
         else:
+            if self.debug:
+                print("No readable file")
             self.registry = {}
             self.default = None
 
@@ -140,6 +145,8 @@ class SkoobotRegistry:
         If the registry file is not valid, mark the registry as not valid
         and raise an Exception
         """
+        if self.debug:
+            print("Loading")
         try:
             with open(self.registryPath, "r") as registryFile:
                 registryDict = json.load(registryFile)
@@ -150,6 +157,8 @@ class SkoobotRegistry:
                 self.default = newDefault
             self.valid = True
         except:
+            if self.debug:
+               print("load(): exception")
             self.registry = {}
             self.default = None
             self.valid = False

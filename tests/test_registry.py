@@ -339,6 +339,13 @@ class TestSkootbotRegistry(unittest.TestCase):
             registry.load()
             self.assertEqual(None, registry.getDefaultName())
 
+        with self.subTest("Loading good default"):
+            self.registryDict["default"] = self.skooName
+            with open(self.tempPath, "w") as registryFile:
+                json.dump(self.registryDict, registryFile, indent=4)
+            registry.load()
+            self.assertEqual(self.skooName, registry.getDefaultName())
+
     def testBug11(self):
         """
         Tests the resolution of bug #11
