@@ -5,6 +5,7 @@ from skoopy.registry import SkoobotRegistry
 from pathlib import Path
 from bluepy.btle import BTLEException
 import time
+import argparse
 
 CMD_RIGHT = 0x10
 CMD_LEFT = 0x11
@@ -179,20 +180,34 @@ class CommandParser:
         print("Finished testing")
 
 def control():
+    argParser = argparse.ArgumentParser(description="Control a Skoobot")
+    argParser.add_argument("--baddr", "-b", nargs=1, help="Skoobot bluetooth address")
+    argParser.add_argument("--name", "-n", nargs=1, help="Skoobot name")
+    # argParser.add_argument("--changedefault", "-c", action="store_true", help="Change the default Skoobot")
+    # argParser.add_argument("--register", "-r", action="store_true", help="Register the Skoobot")
+    argParser.add_argument("commands", nargs=argparse.REMAINDER, help="Commands to send to the Skoobot")
+    args = argParser.parse_args()
+
     controller = SkoobotController()
 
-    print("Attempting to contact Skoobot...")
-    
-    addr = controller.connect()
-    if addr == None:
-        print("Unable to connect to skoobot")
-        exit(1)
-    
-    parser = CommandParser(controller)
-    parser.parseCommandList(["test"])
+    name = getattr(args, "name", None)
+    baddr = getattr(args, "baddr", None)
+    changeDefault = getattr(args, "changedefault", False)
+    doRegister = getattr(args, "register", False)
+    commandList = getattr(args, "commands", None)
 
-    controller.disconnect()
-    print("Done")
+    if commandList != 0:
+        addr = controller.connect(name, baddr)
+        if addr == None:
+            print("Unable to connect to skoobot")
+            exit(1)
+    
+        parser = CommandParser(controller)
+        parser.parseCommandList(commandList)
+
+        controller.disconnect()
+    else:
+        print("No commands")
 
 if __name__ == "__main__":
     control()
