@@ -110,6 +110,74 @@ class SkoobotController:
     def cmdSleep(self):
        self.sendCommand(CMD_SLEEP, True)
 
+class CommandParser:
+    def __init__(self, controller):
+        self.commandTable = {
+            "left" : (1, "controller", "Left"),
+            "right" : (1, "controller", "Right"),
+            "forward" : (1, "controller", "Forward"),
+            "backward" : (1, "controller", "Backward"),
+            "stop" : (1, "controller", "Stop"),
+            "sleep" : (1, "controller", "Sleep"),
+            "wait" : (2, "self", "Wait"),
+            "test" : (1, "self", "Test")
+        }
+        self.controller = controller
+
+    def parseCommandList(self, words):
+        objDict = {
+            "controller" : self.controller,
+            "self" : self
+        }
+        while len(words) >= 1:
+            if not isinstance(words[0], str):
+                raise TypeError("words should be a list of strings")
+            commandTuple = self.commandTable.get(words[0])
+            if commandTuple == None:
+                raise RuntimeError("Unrecognised command: {0:s}".format(words[0]))
+
+            wordCount = commandTuple[0]
+
+            targetObject = objDict.get(commandTuple[1])
+            if targetObject == None:
+                raise RuntimeError("Unrecognised command type: {0:s}".format(commandTuple[1]))
+            targetMethod = getattr(targetObject, "cmd" + commandTuple[2])
+
+            if wordCount == 1:
+                targetMethod()
+            else:
+                args = words[1:wordCount]
+                targetMethod(args)
+
+            words = words[wordCount:]
+    
+    def cmdWait(self, args):
+        duration = float(args[0])
+        time.sleep(duration)
+
+    def cmdTest(self):
+        print("Testing...")
+
+        print("Right")
+        self.parseCommandList(["right", "wait", "1"])
+
+        print("Left")
+        self.parseCommandList(["left", "wait", "1"])
+
+        print("Forward")
+        self.parseCommandList(["forward", "wait", "1"])
+
+        print("Backward")
+        self.parseCommandList(["backward", "wait", "0.5"])
+
+        print("Stop")
+        self.parseCommandList(["stop", "wait", "1"])
+
+        print("Sleep")
+        self.parseCommandList(["sleep"])
+
+        print("Finished testing")
+
 def control():
     controller = SkoobotController()
 
@@ -120,33 +188,11 @@ def control():
         print("Unable to connect to skoobot")
         exit(1)
     
-    print("Right")
-    controller.cmdRight()
-    time.sleep(1)
-    
-    print("Left")
-    controller.cmdLeft()
-    time.sleep(1)
-    
-    print("Forward")
-    controller.cmdForward()
-    time.sleep(1)
-    
-    print("Backward")
-    controller.cmdBackward()
-    time.sleep(0.5)
-    
-    print("Stop")
-    controller.cmdStop()
-    time.sleep(1)
-    
-    print("Sleep")
-    controller.cmdSleep()
-    time.sleep(1)
-    
+    parser = CommandParser(controller)
+    parser.parseCommandList(["test"])
+
     controller.disconnect()
     print("Done")
-
 
 if __name__ == "__main__":
     control()
