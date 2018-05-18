@@ -15,6 +15,7 @@ pip3 install skoopy
 
 ## Commands
 - `sudo skooscan` - Scan for Skoobots
+- `skoocontrol` - Send a command or list of commands to a Skoobot
 
 
 ## See also
