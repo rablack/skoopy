@@ -22,6 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             'skooscan=skoopy.scanner:scan',
+            'skoocontrol=skoopy.controller:control',
         ],
     },
 )
