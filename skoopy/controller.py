@@ -21,7 +21,7 @@ CMD_GET_DISTANCE = 0x22
 #    cmd_record = 0x30
 #    cmd_increase_gain = 0x31
 #    cmd_decrease_gain = 0x32
-#    cmd_rover_mode = 0x40
+CMD_ROVER_MODE = 0x40
 
 class SkoobotController:
     """
@@ -122,6 +122,9 @@ class SkoobotController:
     def cmdSleep(self):
        self.sendCommand(CMD_SLEEP, True)
 
+    def cmdRoverMode(self):
+       self.sendCommand(CMD_ROVER_MODE, True)
+
     def requestDistance(self):
        self.sendCommand(CMD_GET_DISTANCE, True)
        return self.readData()
@@ -137,6 +140,7 @@ class CommandParser:
             "backward" : (1, "controller", "Backward"),
             "stop" : (1, "controller", "Stop"),
             "sleep" : (1, "controller", "Sleep"),
+            "rover" : (1, "controller", "RoverMode"),
             "wait" : (2, "self", "Wait"),
             "test" : (1, "self", "Test"),
             "get" : (2, "self", "Get")
