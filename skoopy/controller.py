@@ -17,7 +17,7 @@ CMD_SLEEP = 0x15
 #    cmd_step_mode = 0x16
 #    cmd_buzzer = 0x17
 #    cmd_get_ambient = 0x21
-#    cmd_get_distance = 0x22
+CMD_GET_DISTANCE = 0x22
 #    cmd_record = 0x30
 #    cmd_increase_gain = 0x31
 #    cmd_decrease_gain = 0x32
@@ -93,6 +93,17 @@ class SkoobotController:
         cmd = characteristics[0]
         cmd.write(cmdBytes, waitForResponse)
 
+    def readData(self):
+        if self.connectedSkoobot == None:
+            raise RuntimeError("BLE not connected")
+        characteristics = self.transport.getRawCharacteristicsByUUID(self.uuids["data"])
+        if len(characteristics) == 0:
+            raise RuntimeError("data characteristic not supported by firmware")
+        charac = characteristics[0]
+        dataBytes = charac.read()
+        data = int.from_bytes(dataBytes, byteorder="little")
+        return data
+
     def cmdRight(self):
        self.sendCommand(CMD_RIGHT, True)
 
@@ -111,8 +122,14 @@ class SkoobotController:
     def cmdSleep(self):
        self.sendCommand(CMD_SLEEP, True)
 
+    def requestDistance(self):
+       self.sendCommand(CMD_GET_DISTANCE, True)
+       return self.readData()
+
 class CommandParser:
     def __init__(self, controller):
+        # Command table - dictionary in the form:
+        #   <command> : (<args inc command>, <command object>, <command method>)
         self.commandTable = {
             "left" : (1, "controller", "Left"),
             "right" : (1, "controller", "Right"),
@@ -121,7 +138,13 @@ class CommandParser:
             "stop" : (1, "controller", "Stop"),
             "sleep" : (1, "controller", "Sleep"),
             "wait" : (2, "self", "Wait"),
-            "test" : (1, "self", "Test")
+            "test" : (1, "self", "Test"),
+            "get" : (2, "self", "Get")
+        }
+        # Skoobot property table - dictionary in the form:
+        #   <property> : <request method>
+        self.propertyTable = {
+            "distance" : "Distance"
         }
         self.controller = controller
 
@@ -178,6 +201,14 @@ class CommandParser:
         self.parseCommandList(["sleep"])
 
         print("Finished testing")
+
+    def cmdGet(self, args):
+        request = self.propertyTable.get(args[0])
+        if request == None:
+            raise KeyError("Skoobot data property {0:s} not found.".format(args[0]))
+        targetMethod = getattr(self.controller, "request" + request)
+        data = targetMethod()
+        print("{0:s} = {1:d}".format(args[0], data))
 
 def control():
     argParser = argparse.ArgumentParser(description="Control a Skoobot")
