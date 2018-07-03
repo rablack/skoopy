@@ -10,7 +10,7 @@ Skoopy is a Python 3 library and utilities that can be used to control the [Skoo
 
 3. In the directory above the downloaded repository run:
 ```sh
-pip3 install skoopy
+sudo pip3 install skoopy
 ```
 
 ## Commands
