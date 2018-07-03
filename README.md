@@ -22,7 +22,10 @@ pip3 install skoopy
 If skooscan gives a File not Found error, this usually means that it cannot
 work out the logname of the logged in user. Certain Linux variants (such as
 Raspbian) do not update the login database when they auto-login users.
-For commands run with `sudo` the current user and the login user are different. The skooscan command uses this information to work out your home directory.
+
+For commands run with `sudo` the current user and the login user are different.
+The skooscan command uses this information to work out your home directory.
+
 The workaround is to execute the `login` command before running `sudo skooscan`.
 
 
