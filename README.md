@@ -17,6 +17,11 @@ sudo pip3 install skoopy
 - `sudo skooscan` - Scan for Skoobots
 - `skoocontrol` - Send a command or list of commands to a Skoobot
 
+For further information, run each command with the `--help` flag, e.g.
+```sh
+skoocontrol --help
+```
+
 ## Troubleshooting
 ### File not Found in skooscan
 If skooscan gives a File not Found error, this usually means that it cannot
@@ -27,7 +32,6 @@ For commands run with `sudo` the current user and the login user are different.
 The skooscan command uses this information to work out your home directory.
 
 The workaround is to execute the `login` command before running `sudo skooscan`.
-
 
 ## See also
 - [Skoobot Firmware]
