@@ -216,8 +216,8 @@ class CommandParser:
 
 def control():
     argParser = argparse.ArgumentParser(description="Control a Skoobot")
-    argParser.add_argument("--baddr", "-b", nargs=1, help="Skoobot bluetooth address")
-    argParser.add_argument("--name", "-n", nargs=1, help="Skoobot name")
+    argParser.add_argument("--baddr", "-b", help="Skoobot bluetooth address")
+    argParser.add_argument("--name", "-n", help="Skoobot name")
     # argParser.add_argument("--changedefault", "-c", action="store_true", help="Change the default Skoobot")
     # argParser.add_argument("--register", "-r", action="store_true", help="Register the Skoobot")
     argParser.add_argument("commands", nargs=argparse.REMAINDER, help="Commands to send to the Skoobot")
