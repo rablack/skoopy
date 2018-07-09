@@ -16,7 +16,7 @@ CMD_SLEEP = 0x15
 
 #    cmd_step_mode = 0x16
 #    cmd_buzzer = 0x17
-#    cmd_get_ambient = 0x21
+CMD_GET_AMBIENT = 0x21
 CMD_GET_DISTANCE = 0x22
 #    cmd_record = 0x30
 #    cmd_increase_gain = 0x31
@@ -31,9 +31,15 @@ class SkoobotController:
     def __init__(self):
         self.transport = TransportBluepy()
         self.registry = SkoobotRegistry()
+
+        # Table of characteristic name to uuid mappings.
+        # The characteristic names used are the ones in the firmware.
         self.uuids = {
             "cmd" : "00001525-1212-efde-1523-785feabcd123",
-            "data" : "00001524-1212-efde-1523-785feabcd123"
+            "data" : "00001524-1212-efde-1523-785feabcd123",
+            "byte2" : "00001526-1212-efde-1523-785feabcd123",
+            "byte128" : "00001527-1212-efde-1523-785feabcd123",
+            "byte4" : "00001528-1212-efde-1523-785feabcd123",
         }
         self.connectedSkoobot = None
 
@@ -93,16 +99,25 @@ class SkoobotController:
         cmd = characteristics[0]
         cmd.write(cmdBytes, waitForResponse)
 
-    def readData(self):
+    def readBytes(self, charName="data"):
+        """
+        Read an array of bytes from the named characteristic
+
+        returns a bytearray of the data
+        """
         if self.connectedSkoobot == None:
             raise RuntimeError("BLE not connected")
-        characteristics = self.transport.getRawCharacteristicsByUUID(self.uuids["data"])
+        characteristics = self.transport.getRawCharacteristicsByUUID(self.uuids[charName])
         if len(characteristics) == 0:
-            raise RuntimeError("data characteristic not supported by firmware")
+            raise RuntimeError("{0:s} characteristic not supported by firmware".format(charName))
         charac = characteristics[0]
         dataBytes = charac.read()
-        data = int.from_bytes(dataBytes, byteorder="little")
-        return data
+        return dataBytes
+
+    def readData(self, charName="data"):
+        dataBytes = self.readBytes(charName)
+        value = int.from_bytes(dataBytes, byteorder="little")
+        return value
 
     def cmdRight(self):
        self.sendCommand(CMD_RIGHT, True)
@@ -129,6 +144,10 @@ class SkoobotController:
        self.sendCommand(CMD_GET_DISTANCE, True)
        return self.readData()
 
+    def requestAmbientLight(self):
+       self.sendCommand(CMD_GET_AMBIENT, True)
+       return self.readData("byte2")
+
 class CommandParser:
     def __init__(self, controller):
         # Command table - dictionary in the form:
@@ -143,12 +162,15 @@ class CommandParser:
             "rover" : (1, "controller", "RoverMode"),
             "wait" : (2, "self", "Wait"),
             "test" : (1, "self", "Test"),
-            "get" : (2, "self", "Get")
+            "get" : (2, "self", "Get"),
+            "list" : (1, "self", "List"),
+            "read" : (2, "self", "Read"),
         }
         # Skoobot property table - dictionary in the form:
         #   <property> : <request method>
         self.propertyTable = {
-            "distance" : "Distance"
+            "distance" : "Distance",
+            "ambient" : "AmbientLight",
         }
         self.controller = controller
 
@@ -213,6 +235,44 @@ class CommandParser:
         targetMethod = getattr(self.controller, "request" + request)
         data = targetMethod()
         print("{0:s} = {1:d}".format(args[0], data))
+
+    def cmdList(self):
+        """
+        List the known characteristics
+        """
+        "List of known characteristics:"
+        for key, value in self.controller.uuids.items():
+            print("\t{0:s}\t: {1:s}".format(key, value))
+        
+    def cmdRead(self, args):
+        """
+        Read the named characteristic
+        """
+        if args[0] in self.controller.uuids:
+            value = self.controller.readBytes(args[0])
+            self.printBytes(value)
+        else:
+            raise RuntimeError("Unknown characteristic {0:s}".format(args[0]))
+
+    def printBytes(self, bytes):
+        """
+        Print the contents of a bytearray
+        """
+        length = len(bytes)
+        if length == 0:
+            print("<empty>")
+        else:
+            output =[] 
+            width = 16
+            for i in range(0, length, 2):
+                if i % width == 0 and i != 0:
+                    print(" ".join(output))
+                    output = []
+                if i + 1 < length:
+                    output.append("0x{1:02x}{0:02x}".format(bytes[i], bytes[i + 1]))
+                else:
+                    output.append("0x{0:02x}".format(bytes[i]))
+            print(" ".join(output))
 
 def control():
     argParser = argparse.ArgumentParser(description="Control a Skoobot")
